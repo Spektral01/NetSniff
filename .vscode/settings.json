@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "csv_writer.h": "c",
-        "stat.h": "c",
-        "af_packet_sniffer.h": "c",
-        "signal.h": "c",
-        "types.h": "c"
-    }
-}
