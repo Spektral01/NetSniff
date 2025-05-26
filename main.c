@@ -3,10 +3,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <signal.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <arpa/inet.h>
 
 volatile int stop = 0;
 volatile unsigned long global_packet_count = 0;
