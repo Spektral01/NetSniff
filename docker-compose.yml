@@ -53,7 +53,7 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
     depends_on:
-          kafka:
+      kafka:
         condition: service_healthy
     restart: unless-stopped
     networks:
@@ -105,23 +105,66 @@ services:
       - app-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8086/ping"]
-            interval: 10s
+      interval: 10s
       timeout: 5s
       retries: 5
 
-  grafana:
+  grafana-1:
     image: grafana/grafana:latest
-    container_name: grafana
-    ports:
-      - "3000:3000"
+    container_name: grafana-1
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
-      - grafana-data:/var/lib/grafana
+      - grafana-data-1:/var/lib/grafana
     depends_on:
       influxdb:
         condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  grafana-2:
+    image: grafana/grafana:latest
+    container_name: grafana-2
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data-2:/var/lib/grafana
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  grafana-3:
+    image: grafana/grafana:latest
+    container_name: grafana-3
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data-3:/var/lib/grafana
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-lb
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - grafana-1
+      - grafana-2
+      - grafana-3
     restart: unless-stopped
     networks:
       - app-network
@@ -133,7 +176,6 @@ networks:
 volumes:
   sniffer-data:
   influxdb-data:
-  grafana-data:
-
-
-
+  grafana-data-1:
+  grafana-data-2:
+  grafana-data-3:
