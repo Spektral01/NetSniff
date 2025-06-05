@@ -1,0 +1,94 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 2,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P5697886F9CA74929"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"sniff\")\r\n  |> range(start: -24h)                                           // взять последние 24 часа\r\n  |> filter(fn: (r) => r._measurement == \"ip_stats\")              // только наша метрика\r\n  |> pivot(\r\n      rowKey:   [\"_time\", \"IP\"],                                  // создаём строки на основе времени и IP\r\n      columnKey: [\"_field\"],                                      // каждое поле (DstCount, SrcCount) станет колонкой\r\n      valueColumn: \"_value\"                                       // значение поля возьмём из _value\r\n    )\r\n  |> keep(columns: [\"IP\", \"DstCount\", \"SrcCount\"])                 // оставляем только нужные колонки",
+          "refId": "A"
+        }
+      ],
+      "title": "dashboard",
+      "type": "piechart"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "DstCount Stats Last Version",
+  "uid": "b3a72dcc-e055-4bca-bb58-e87e95561dd4",
+  "version": 1
+}

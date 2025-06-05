@@ -1,0 +1,73 @@
+version: '3'
+
+services:
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=password
+      - GF_SECURITY_DISABLE_INITIAL_SETUP=true
+    volumes:
+      - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./grafana-dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - influxdb
+      - influxdb-replica
+      - telegraf
+
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=sniff
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password
+      - DOCKER_INFLUXDB_INIT_ORG=sniff
+      - DOCKER_INFLUXDB_INIT_BUCKET=sniff
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mytoken
+    restart: unless-stopped
+
+  influxdb-replica:
+    image: influxdb:2.7
+    container_name: influxdb-replica
+    ports:
+      - "8087:8086"
+    volumes:
+      - influxdb_replica_data:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=sniff
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password
+      - DOCKER_INFLUXDB_INIT_ORG=sniff
+      - DOCKER_INFLUXDB_INIT_BUCKET=sniff
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mytoken
+    restart: unless-stopped
+
+  telegraf:
+    image: telegraf:latest
+    container_name: telegraf
+    depends_on:
+      - influxdb
+      - influxdb-replica
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf
+      - ./ip_stats.csv:/ip_stats.csv
+    environment:
+      - INFLUXDB_URL_1=http://influxdb:8086
+      - INFLUXDB_URL_2=http://influxdb-replica:8086
+      - INFLUXDB_TOKEN=mytoken
+      - INFLUXDB_ORG=sniff
+      - INFLUXDB_BUCKET=sniff
+    restart: unless-stopped
+
+volumes:
+  influxdb_data:
+  influxdb_replica_data:
